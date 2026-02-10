@@ -17,6 +17,7 @@ def getweather(latitude,longitude):
 
 #这个函数借助API获取天气码以及温度，昼夜
 #返回天气码，就是weathercode，其他的返回值我抛掉了
+
 def weathercode(weathercode):
     weathercodedz = {
         0 : '晴',
@@ -49,15 +50,41 @@ def weathercode(weathercode):
         99 : '重度雷雨伴有冰雹'
     }
     return weathercodedz.get(weathercode,"未知天气")
+
 #解析传来的天气码
 #(敲这个字典给我累死了你知道吗)
+
+def cityget(cityname):
+    urlc = 'https://geocoding-api.open-meteo.com/v1/search'
+    apicd = {
+        "name" : cityname,
+        "count" : 1
+    }
+    rescity = requests.get(urlc,params=apicd)
+    data = rescity.json()
+    if "results" in data and len(data["results"]) > 0:
+        city_info = data["results"][0]
+        latt = city_info.get("latitude")
+        lutt = city_info.get("longitude")
+        return latt,lutt
+    else:
+        print(f"API返回了数据，但'results'键为空或不存在")
+        print(f"完整响应结构: {data}")
+        print(f"状态码: {rescity.status_code}")
+        return {}
+
+#这个函数会根据传来的城市名称输出其经纬度
+#在错误时输出错误信息
+
 if __name__ == "__main__":
-    latitude1 = float(input("纬度="))
-    longitude1 = float(input("经度="))
-    cur,temp,dayn = getweather(latitude1,longitude1)
+    inputa = str(input("城市名称(最好为英文名):"))
+    lat1,long1 = cityget(inputa)
+    cur,temp,dayn = getweather(lat1,long1)
     curdz = weathercode(cur)
     print("当前天气为",curdz,"\n温度大约在",temp,"摄氏度")
     if dayn == 1:
         print("出去看看吧，现在正是美好的白天")
     else:
         print("天黑了，时候已经不早，早点睡觉吧\n晚安")
+
+#主函数，运行时自动调用
