@@ -1,0 +1,58 @@
+import argparse
+from datetime import date
+import json
+import os
+
+DB_PATH = "todos.json"
+
+def load():
+    if not os.path.exists(DB_PATH):
+        return []
+    with open(DB_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save(tasks):
+    with open(DB_PATH, "w", encoding="utf-8") as f:
+        json.dump(tasks, f, indent=2, ensure_ascii=False)
+
+def add_task(description):
+    tasks = load()
+    new_id = max([t["id"] for t in tasks], default=0) + 1
+    tasks.append({
+        "id": new_id,
+        "desc": description,
+        "done": False,
+        "created": str(date.today())
+    })
+    save(tasks)
+    print(f" 已添加 (ID: {new_id})")
+
+def list_tasks():
+    tasks = load()
+    if not tasks:
+        print("待办清单是空的")
+        return
+    for t in tasks:
+        status = "完成" if t["done"] else "待办"
+        print(f"[{t['id']}] {status} {t['desc']} ({t['created']})")
+
+def main():
+    parser = argparse.ArgumentParser(description="todolist - 待办事项")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # add 命令
+    parser_add = subparsers.add_parser("add", help="添加新任务")
+    parser_add.add_argument("description", help="任务描述")
+
+    # list 命令
+    subparsers.add_parser("list", help="列出所有任务")
+
+    args = parser.parse_args()
+
+    if args.command == "add":
+        add_task(args.description)
+    elif args.command == "list":
+        list_tasks()
+
+if __name__ == "__main__":
+    main()
