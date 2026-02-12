@@ -76,9 +76,30 @@ def cityget(cityname):
 #这个函数会根据传来的城市名称输出其经纬度
 #在错误时输出错误信息
 
+def apicity(inputa):
+    API_KEY = "在此处输入你的API_KEY"  
+    url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+    headers = {
+    "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+        }
+    data = {
+    "model": "glm-4-flash",          
+    "messages": [
+    {"role": "user", "content": f"请输出与下列词最相近的城市名的英文名，词为:{inputa}，直接输出英文名，不要输出其他任何内容，若与某城市名重合，直接输出此城市名，若没有相匹配的城市，直接输出“未找到相应城市”，若输入的词是一句话，且包含一座城市，请输出包含的城市名，若包含多个城市，优先输出第一个城市的英文名，若是一句话，但不包含城市，输出“未找到相应城市”"}
+        ]
+    }
+    response = requests.post(url, headers=headers, json=data)
+    result = response.json()
+    reply = result["choices"][0]["message"]["content"]
+    return reply
+    
+#调用AI模型进行识别
+
 if __name__ == "__main__":
     inputa = str(input("城市名称(最好为英文名):"))
-    lat1,long1 = cityget(inputa)
+    acity = apicity(inputa)
+    lat1,long1 = cityget(apicity)
     cur,temp,dayn = getweather(lat1,long1)
     curdz = weathercode(cur)
     print("当前天气为",curdz,"\n温度大约在",temp,"摄氏度")
